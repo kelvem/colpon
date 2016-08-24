@@ -6,12 +6,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.kelvem.common.CmdUtils;
 import com.kelvem.common.CrawlerUtil;
 import com.kelvem.common.DateUtils;
 import com.kelvem.common.RegxUtil;
-import com.kelvem.crawler.model.OffersModel;
 import com.kelvem.crawler.model.HtmlSourceModel;
+import com.kelvem.crawler.model.OffersModel;
 import com.kelvem.crawler.model.StoresModel;
 
 public class S2_Coupon_MeliuzDetail {
@@ -144,18 +143,18 @@ public class S2_Coupon_MeliuzDetail {
 //		System.out.println("companyInfo : " + companyInfo);
 		
 		
-		StoresModel companyModel = new StoresModel();
-		companyModel.id = htmlSourc.getHtmlSourceId();
-		companyModel.initials = companyImage.substring(0,1);
-		companyModel.categoryId = 0;
-		companyModel.name = companyTitle.replace("Cupom de Desconto ", "");
-		companyModel.description = companyInfo;
-		companyModel.link = companyImage;
-		companyModel.titleslug = htmlSourc.getName();
-		companyModel.createdAt = DateUtils.getDateTimeString(new Date());
-		companyModel.updatedAt = DateUtils.getDateTimeString(new Date());
+		StoresModel store = new StoresModel();
+		store.id = htmlSourc.getHtmlSourceId();
+		store.categoryId = 0;
+		store.name = companyTitle.replace("Cupom de Desconto ", "");
+		store.description = companyInfo;
+		store.link = companyImage;
+		store.titleslug = htmlSourc.getName();
+		store.initials = store.titleslug.substring(0,1).toUpperCase();
+		store.createdAt = DateUtils.getDateTimeString(new Date());
+		store.updatedAt = DateUtils.getDateTimeString(new Date());
 		
-		Integer storeId = StoresModel.addRecord(companyModel);
+		Integer storeId = StoresModel.addRecord(store);
 //		StoresModel.updateRecord(companyModel, storeId, "id", htmlSourc.getHtmlSourceId().toString());
 //		try {
 //			CmdUtils.shell("wget -x  -np -O /images/Store-" + htmlSourc.getHtmlSourceId() + ".png " + companyImage);
@@ -204,14 +203,17 @@ public class S2_Coupon_MeliuzDetail {
 			model.storeId = htmlSourc.getHtmlSourceId();
 			model.type = type;
 			model.name = title;
-			model.description = info;
+			model.description = filterDesc(info);
 			model.link = "http://baidu.com";
 			model.code = coupon;
 			model.status = enableFlag;
 			model.confirmDate = DateUtils.getDateTimeString(new Date());
-			model.ends = DateUtils.getDateTimeString(new Date());
 			model.createdAt = DateUtils.getDateTimeString(new Date());
 			model.updatedAt = DateUtils.getDateTimeString(new Date());
+			
+			long day = (long)(Math.random() * 23) + 7;
+			long time = new Date().getTime() + 1000 * 60 * 60 * 24 * day;
+			model.ends = DateUtils.getDateString(new Date(time));
 			
 			if (oldCouponMap.containsKey(model.key())) {
 				// 已存在
@@ -219,10 +221,13 @@ public class S2_Coupon_MeliuzDetail {
 					// 过期， 最后统一更新
 					OffersModel delete = oldCouponMap.get(model.key());
 					OffersModel.updateRecord(delete, delete.id, "status", "0");
-					OffersModel.updateRecord(delete, delete.id, "ends", (DateUtils.getDateTimeString(new Date())));
+					OffersModel.updateRecord(delete, delete.id, "ends", (DateUtils.getDateString(new Date())));
 					oldCouponMap.remove(model.key());
 				} else {
-					// 未过期， 忽略
+					// 未过期
+					OffersModel update = oldCouponMap.get(model.key());
+					OffersModel.updateRecord(update, update.id, "updatedAt", model.updatedAt);
+					OffersModel.updateRecord(update, update.id, "ends", model.ends);
 					oldCouponMap.remove(model.key());
 				}
 			} else {
@@ -235,6 +240,17 @@ public class S2_Coupon_MeliuzDetail {
 			OffersModel.addRecord(couponList);
 		}
 	}
+	
+	private static String filterDesc(String str) {
+		//String str = " <p class=\"mb-\"> Atualizado em 24/08/2016.<br>  Encontramos 0 cupom de desconto para A Casa do Artista. &nbsp;&nbsp;<a href=\"#\" class=\"partner-desc-hide txt--gray-darker\"><span class=\"icon icon--chevron-down\" style=\"vertical-align:-3px;\"></span></a> </p>  <p class=\"partner-desc mb-\" style=\"display:none;\"> Não perca tempo e compre mais barato com cupom desconto A Casa do Artista. Te ajudamos a encontrar o melhor preço, frete grátis e promoções A Casa do Artista. </p> <p class=\"partner-desc mb-\" style=\"display:none;\"> Cupom de desconto A Casa do Artista 2016 é aqui! &nbsp;&nbsp;<a href=\"#\" class=\"txt--gray-darker\"><span class=\"icon icon--chevron-up\" style=\"vertical-align:-3px;\"></span></a> </p> ";
+		if (str.indexOf("<br>") > 0) {
+			str = str.substring(str.indexOf("<br>") + 4);
+		}
+		str = str.replace("&nbsp;", "");
+		str = str.replaceAll("<[^>]*>", "");
+		return str;
+	}
+	
 }
 
 
