@@ -39,6 +39,7 @@ public class S2_Coupon_MeliuzDetail {
 	public static void main(String[] args) {
 
 		try {
+			System.out.println("Version.0825");
 			
 			HtmlSourceModel htmlSource = new HtmlSourceModel();
 			htmlSource.setHtmlType("colpon");
@@ -204,6 +205,7 @@ public class S2_Coupon_MeliuzDetail {
 			model.type = type;
 			model.name = title.trim();
 			model.description = filterDesc(info);
+			System.out.println(model.description);
 			model.link = "http://baidu.com";
 			model.code = coupon;
 			model.status = enableFlag;
