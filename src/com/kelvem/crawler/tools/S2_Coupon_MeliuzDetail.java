@@ -283,6 +283,11 @@ public class S2_Coupon_MeliuzDetail {
 			links = RegxUtil.match(content, "<a href=\"([\\s\\S]*?)\">", 1);
 		}
 		
+		if (links.size() <= 0 || !links.get(0).startsWith("http")) {
+			System.out.println("coupon.link : " + url);
+			return "";
+		}
+		
 		return links.get(0);
 	}
 	

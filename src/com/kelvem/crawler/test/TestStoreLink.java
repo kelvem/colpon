@@ -37,7 +37,8 @@ public class TestStoreLink {
 //		System.out.println(link);
 		
 //		String url_company_sepha = "https://www.meliuz.com.br/desconto/sepha";
-		String url_company_sepha = "https://www.meliuz.com.br/desconto/a-casa-do-artista";
+//		String url_company_sepha = "https://www.meliuz.com.br/desconto/a-casa-do-artista";
+		String url_company_sepha = "https://www.meliuz.com.br/desconto/a-dama-e-o-cachorrinho";
 		String content1 = CrawlerUtil.get(url_company_sepha);
 		addCoupons(content1);
 	}
@@ -94,7 +95,6 @@ public class TestStoreLink {
 	
 	public static String getStoreLink(String url) {
 		String content = CrawlerUtil.get(url);
-		System.out.println(content);
 		List<String> links = RegxUtil.match(content, "&ULP=\\[\\[([\\s\\S]*?)\\]\\]", 1);
 		
 		if (links.size() <= 0) {
@@ -104,6 +104,11 @@ public class TestStoreLink {
 		if (links.size() <= 0) {
 			links = RegxUtil.match(content, "<a href=\"([\\s\\S]*?)\">", 1);
 		}
+		
+		if (links.size() <= 0 || !links.get(0).startsWith("http")) {
+			System.out.println(content);
+		}
+		
 		
 		return links.get(0);
 	}
