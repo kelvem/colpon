@@ -44,6 +44,7 @@ public class S2_Coupon_MeliuzDetail {
 	public static void main(String[] args) {
 
 		try {
+			System.out.println("Version.0825");
 			
 			HtmlSourceModel htmlSource = new HtmlSourceModel();
 			htmlSource.setHtmlType("colpon");
@@ -152,7 +153,7 @@ public class S2_Coupon_MeliuzDetail {
 		store.id = htmlSourc.getHtmlSourceId();
 		store.categoryId = 0;
 		store.name = companyTitle.replace("Cupom de Desconto ", "");
-		store.description = companyInfo;
+		store.description = filterDesc(companyInfo);
 		store.link = companyImage;
 		store.titleslug = htmlSourc.getName();
 		store.initials = store.titleslug.substring(0,1).toUpperCase();
@@ -212,7 +213,7 @@ public class S2_Coupon_MeliuzDetail {
 			OffersModel model = new OffersModel();
 			model.storeId = htmlSourc.getHtmlSourceId();
 			model.type = type;
-			model.name = title;
+			model.name = title.trim();
 			model.description = filterDesc(info);
 			model.link = getStoreLink(url);
 			model.code = coupon;
@@ -259,6 +260,7 @@ public class S2_Coupon_MeliuzDetail {
 		}
 		str = str.replace("&nbsp;", "");
 		str = str.replaceAll("<[^>]*>", "");
+		str = str.trim();
 		return str;
 	}
 	
