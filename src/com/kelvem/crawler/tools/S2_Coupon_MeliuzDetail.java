@@ -202,7 +202,7 @@ public class S2_Coupon_MeliuzDetail {
 			OffersModel model = new OffersModel();
 			model.storeId = htmlSourc.getHtmlSourceId();
 			model.type = type;
-			model.name = title;
+			model.name = title.trim();
 			model.description = filterDesc(info);
 			model.link = "http://baidu.com";
 			model.code = coupon;
@@ -248,6 +248,7 @@ public class S2_Coupon_MeliuzDetail {
 		}
 		str = str.replace("&nbsp;", "");
 		str = str.replaceAll("<[^>]*>", "");
+		str = str.trim();
 		return str;
 	}
 	
