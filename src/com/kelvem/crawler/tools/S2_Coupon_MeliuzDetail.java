@@ -79,6 +79,7 @@ public class S2_Coupon_MeliuzDetail {
 					try {
 						System.out.println(list.get(i).getUrl());
 						System.out.println(e.getMessage());
+						e.printStackTrace();
 					} catch (Exception e1) {
 						e1.printStackTrace();
 					}
@@ -176,80 +177,85 @@ public class S2_Coupon_MeliuzDetail {
 	 */
 	public static void addCoupons(HtmlSourceModel htmlSourc, String content) {
 		
-		List<String> groupList = RegxUtil.match(content, 
-				"box--shadow mb- coupon-container([\\s\\S]*?)bg--white box--round", 0);
+		try {
+			List<String> groupList = RegxUtil.match(content, 
+					"box--shadow mb- coupon-container([\\s\\S]*?)bg--white box--round", 0);
 
 //		System.out.println("coupon cnt : " + groupList.size());
-		List<OffersModel> couponList = new ArrayList<OffersModel>();
-		for (int j = 0; j < groupList.size(); j++) {
-			String group = groupList.get(j);
-			
-			// </span> <p>
-			List<String> coupons = RegxUtil.match(group, "data-code=\"([\\s\\S]*?)\"", 1);
-			List<String> titles = RegxUtil.match(group, "<a class=\"txt--black txt--bold-face\"[^>]*>([\\s\\S]*?)</a>", 1);
-			List<String> infos = RegxUtil.match(group, "</span> <p>([\\s\\S]*?)</p>", 1);
-			List<String> links = RegxUtil.match(group, "href=\"(https:[\\s\\S]*?)\"", 1);
-			
-			if (coupons.size() > 1) {
-				System.out.println("Err coupons NO" + (j+1) + " : " + group);
-			}
-			if (titles.size() != 1) {
-				System.out.println("Err titles NO" + (j+1) + " : " + group);
-			}
-			if (infos.size() > 1) {
-				System.out.println("Err infos NO" + (j+1) + " : " + group);
-			}
-			if (links.size() <= 0) {
-				System.out.println("Err links NO" + (j+1) + " : " + group);
-			}
-			
-			String coupon = (coupons.size() == 1) ? coupons.get(0).trim() : "";
-			String type = (coupon == null || coupon.length() <= 0) ? "D" : "C";
-			String title = titles.get(0);
-			String info = (infos.size() == 1) ? infos.get(0) : "";
-			String url = links.get(0);
-			Integer enableFlag = group.indexOf(">EXPIRADO</span>") >= 0 ? 0 : 1;
-			
-			OffersModel model = new OffersModel();
-			model.storeId = htmlSourc.getHtmlSourceId();
-			model.type = type;
-			model.name = title.trim();
-			model.description = filterDesc(info);
-			model.link = getStoreLink(url);
-			model.code = coupon;
-			model.status = enableFlag;
-			model.confirmDate = DateUtils.getDateTimeString(new Date());
-			model.createdAt = DateUtils.getDateTimeString(new Date());
-			model.updatedAt = DateUtils.getDateTimeString(new Date());
-			
-			long day = (long)(Math.random() * 23) + 7;
-			long time = new Date().getTime() + 1000 * 60 * 60 * 24 * day;
-			model.ends = DateUtils.getDateString(new Date(time));
-			
-			if (oldCouponMap.containsKey(model.key())) {
-				// 已存在
-				if (enableFlag == 0) {
-					// 过期， 最后统一更新
-					OffersModel delete = oldCouponMap.get(model.key());
-					OffersModel.updateRecord(delete, delete.id, "status", "0");
-					OffersModel.updateRecord(delete, delete.id, "ends", (DateUtils.getDateString(new Date())));
-					oldCouponMap.remove(model.key());
-				} else {
-					// 未过期
-					OffersModel update = oldCouponMap.get(model.key());
-					OffersModel.updateRecord(update, update.id, "updatedAt", model.updatedAt);
-					OffersModel.updateRecord(update, update.id, "ends", model.ends);
-					OffersModel.updateRecord(update, update.id, "link", model.link);
-					oldCouponMap.remove(model.key());
+			List<OffersModel> couponList = new ArrayList<OffersModel>();
+			for (int j = 0; j < groupList.size(); j++) {
+				String group = groupList.get(j);
+				
+				// </span> <p>
+				List<String> coupons = RegxUtil.match(group, "data-code=\"([\\s\\S]*?)\"", 1);
+				List<String> titles = RegxUtil.match(group, "<a class=\"txt--black txt--bold-face\"[^>]*>([\\s\\S]*?)</a>", 1);
+				List<String> infos = RegxUtil.match(group, "</span> <p>([\\s\\S]*?)</p>", 1);
+				List<String> links = RegxUtil.match(group, "href=\"(https[\\s\\S]*?)\"", 1);
+				
+				if (coupons.size() > 1) {
+					System.out.println("Err coupons NO" + (j+1) + " : " + group);
 				}
-			} else {
-				// 不存在则添加(过期 与 未过期)
-				couponList.add(model);
+				if (titles.size() != 1) {
+					System.out.println("Err titles NO" + (j+1) + " : " + group);
+				}
+				if (infos.size() > 1) {
+					System.out.println("Err infos NO" + (j+1) + " : " + group);
+				}
+				if (links.size() <= 0) {
+					System.out.println("Err links NO" + (j+1) + " : " + group);
+				}
+				
+				String coupon = (coupons.size() == 1) ? coupons.get(0).trim() : "";
+				String type = (coupon == null || coupon.length() <= 0) ? "D" : "C";
+				String title = titles.get(0);
+				String info = (infos.size() == 1) ? infos.get(0) : "";
+				String url = links.get(0);
+				Integer enableFlag = group.indexOf(">EXPIRADO</span>") >= 0 ? 0 : 1;
+				
+				OffersModel model = new OffersModel();
+				model.storeId = htmlSourc.getHtmlSourceId();
+				model.type = type;
+				model.name = title.trim();
+				model.description = filterDesc(info);
+				model.link = getStoreLink(url);
+				model.code = coupon;
+				model.status = enableFlag;
+				model.confirmDate = DateUtils.getDateTimeString(new Date());
+				model.createdAt = DateUtils.getDateTimeString(new Date());
+				model.updatedAt = DateUtils.getDateTimeString(new Date());
+				
+				long day = (long)(Math.random() * 23) + 7;
+				long time = new Date().getTime() + 1000 * 60 * 60 * 24 * day;
+				model.ends = DateUtils.getDateString(new Date(time));
+				
+				if (oldCouponMap.containsKey(model.key())) {
+					// 已存在
+					if (enableFlag == 0) {
+						// 过期， 最后统一更新
+						OffersModel delete = oldCouponMap.get(model.key());
+						OffersModel.updateRecord(delete, delete.id, "status", "0");
+						OffersModel.updateRecord(delete, delete.id, "ends", (DateUtils.getDateString(new Date())));
+						oldCouponMap.remove(model.key());
+					} else {
+						// 未过期
+						OffersModel update = oldCouponMap.get(model.key());
+						OffersModel.updateRecord(update, update.id, "updatedAt", model.updatedAt);
+						OffersModel.updateRecord(update, update.id, "ends", model.ends);
+						OffersModel.updateRecord(update, update.id, "link", model.link);
+						oldCouponMap.remove(model.key());
+					}
+				} else {
+					// 不存在则添加(过期 与 未过期)
+					couponList.add(model);
+				}
+				// 最后未爬取到的都置为过期
 			}
-			// 最后未爬取到的都置为过期
-		}
-		if (couponList.size() > 0) {
-			OffersModel.addRecord(couponList);
+			if (couponList.size() > 0) {
+				OffersModel.addRecord(couponList);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 	}
 	
