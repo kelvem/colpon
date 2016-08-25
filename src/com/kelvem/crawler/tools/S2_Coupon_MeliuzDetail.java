@@ -188,7 +188,7 @@ public class S2_Coupon_MeliuzDetail {
 			List<String> coupons = RegxUtil.match(group, "data-code=\"([\\s\\S]*?)\"", 1);
 			List<String> titles = RegxUtil.match(group, "<a class=\"txt--black txt--bold-face\"[^>]*>([\\s\\S]*?)</a>", 1);
 			List<String> infos = RegxUtil.match(group, "</span> <p>([\\s\\S]*?)</p>", 1);
-			List<String> links = RegxUtil.match(group, "window.location.href='([\\s\\S]*?)';", 1);
+			List<String> links = RegxUtil.match(group, "href=\"(https:[\\s\\S]*?)\"", 1);
 			
 			if (coupons.size() > 1) {
 				System.out.println("Err coupons NO" + (j+1) + " : " + group);
