@@ -1,7 +1,5 @@
 package com.kelvem.crawler.test;
 
-import java.util.List;
-
 import com.kelvem.crawler.model.HtmlSourceModel;
 import com.kelvem.crawler.tools.S2_Coupon_MeliuzDetail;
 
@@ -26,29 +24,10 @@ public class TestStoreSepha {
 			htmlSource.setMainDomain("meliuz.com.br");
 			htmlSource.setSubDomain("www");
 			htmlSource.setName("sepha");
-			List<HtmlSourceModel> list = HtmlSourceModel.queryModel(htmlSource);
+			htmlSource.setUrl("https://www.meliuz.com.br/desconto/sepha");
 			
-			System.out.println(list.size());
-			
-			
-			for (int i = 0; i < list.size(); i++) {
 				
-				try {
-					HtmlSourceModel source = list.get(i);
-					System.out.println(source.getUrl());
-					
-					S2_Coupon_MeliuzDetail.crawler(source);
-					
-				} catch (Exception e) {
-					System.out.println("no : " + i);
-					try {
-						System.out.println(list.get(i).getUrl());
-						System.out.println(e.getMessage());
-					} catch (Exception e1) {
-						e1.printStackTrace();
-					}
-				}
-			}
+			S2_Coupon_MeliuzDetail.crawler(htmlSource);
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

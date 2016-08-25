@@ -23,16 +23,21 @@ public class S2_Coupon_MeliuzDetail {
 	public static Map<String, OffersModel> oldCouponMap = new HashMap<String, OffersModel>();
 	
 	static {
-		StoresModel queryCompany = new StoresModel();
-		List<StoresModel> oldCompanyList = StoresModel.queryModel(queryCompany);
-		for (StoresModel old : oldCompanyList) {
-			oldCompanyMap.put(old.id, old);
-		}
-		
-		OffersModel queryCoupon = new OffersModel();
-		List<OffersModel> oldCouponList = OffersModel.queryModel(queryCoupon);
-		for (OffersModel old : oldCouponList) {
-			oldCouponMap.put(old.key(), old);
+		try {
+			StoresModel queryCompany = new StoresModel();
+			List<StoresModel> oldCompanyList = StoresModel.queryModel(queryCompany);
+			for (StoresModel old : oldCompanyList) {
+				oldCompanyMap.put(old.id, old);
+			}
+			
+			OffersModel queryCoupon = new OffersModel();
+			List<OffersModel> oldCouponList = OffersModel.queryModel(queryCoupon);
+			for (OffersModel old : oldCouponList) {
+				oldCouponMap.put(old.key(), old);
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 	
@@ -182,6 +187,7 @@ public class S2_Coupon_MeliuzDetail {
 			List<String> coupons = RegxUtil.match(group, "data-code=\"([\\s\\S]*?)\"", 1);
 			List<String> titles = RegxUtil.match(group, "<a class=\"txt--black txt--bold-face\"[^>]*>([\\s\\S]*?)</a>", 1);
 			List<String> infos = RegxUtil.match(group, "</span> <p>([\\s\\S]*?)</p>", 1);
+			List<String> links = RegxUtil.match(group, "window.location.href='([\\s\\S]*?)';", 1);
 			
 			if (coupons.size() > 1) {
 				System.out.println("Err coupons NO" + (j+1) + " : " + group);
@@ -192,11 +198,15 @@ public class S2_Coupon_MeliuzDetail {
 			if (infos.size() > 1) {
 				System.out.println("Err infos NO" + (j+1) + " : " + group);
 			}
+			if (links.size() <= 0) {
+				System.out.println("Err links NO" + (j+1) + " : " + group);
+			}
 			
 			String coupon = (coupons.size() == 1) ? coupons.get(0).trim() : "";
 			String type = (coupon == null || coupon.length() <= 0) ? "D" : "C";
 			String title = titles.get(0);
 			String info = (infos.size() == 1) ? infos.get(0) : "";
+			String url = links.get(0);
 			Integer enableFlag = group.indexOf(">EXPIRADO</span>") >= 0 ? 0 : 1;
 			
 			OffersModel model = new OffersModel();
@@ -204,7 +214,7 @@ public class S2_Coupon_MeliuzDetail {
 			model.type = type;
 			model.name = title;
 			model.description = filterDesc(info);
-			model.link = "http://baidu.com";
+			model.link = getStoreLink(url);
 			model.code = coupon;
 			model.status = enableFlag;
 			model.confirmDate = DateUtils.getDateTimeString(new Date());
@@ -228,6 +238,7 @@ public class S2_Coupon_MeliuzDetail {
 					OffersModel update = oldCouponMap.get(model.key());
 					OffersModel.updateRecord(update, update.id, "updatedAt", model.updatedAt);
 					OffersModel.updateRecord(update, update.id, "ends", model.ends);
+					OffersModel.updateRecord(update, update.id, "link", model.link);
 					oldCouponMap.remove(model.key());
 				}
 			} else {
@@ -249,6 +260,12 @@ public class S2_Coupon_MeliuzDetail {
 		str = str.replace("&nbsp;", "");
 		str = str.replaceAll("<[^>]*>", "");
 		return str;
+	}
+	
+	private static String getStoreLink(String url) {
+		String content = CrawlerUtil.get(url);
+		String link = RegxUtil.match(content, "&ULP=\\[\\[([\\s\\S]*?)\\]\\]", 1).get(0);
+		return link;
 	}
 	
 }
