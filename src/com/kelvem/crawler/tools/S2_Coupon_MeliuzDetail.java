@@ -148,7 +148,7 @@ public class S2_Coupon_MeliuzDetail {
 		store.id = htmlSourc.getHtmlSourceId();
 		store.categoryId = 0;
 		store.name = companyTitle.replace("Cupom de Desconto ", "");
-		store.description = companyInfo;
+		store.description = filterDesc(companyInfo);
 		store.link = companyImage;
 		store.titleslug = htmlSourc.getName();
 		store.initials = store.titleslug.substring(0,1).toUpperCase();
@@ -205,7 +205,6 @@ public class S2_Coupon_MeliuzDetail {
 			model.type = type;
 			model.name = title.trim();
 			model.description = filterDesc(info);
-			System.out.println(model.description);
 			model.link = "http://baidu.com";
 			model.code = coupon;
 			model.status = enableFlag;
